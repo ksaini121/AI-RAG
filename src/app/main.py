@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy import text
 
+from app.agent.graph import connect_graph
 from app.api.routes import document_routes, user_routes
 from app.core.config import config
 from app.db.session import engine
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             "until it's reachable (make temporal-up).",
             config.temporal_host,
         )
+    await connect_graph()
     yield
 
 

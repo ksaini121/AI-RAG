@@ -30,8 +30,8 @@ async def upload_document(
 
 
 @router.get("", response_model=list[DocumentRead])
-async def get_all_documents(user: CurrentUser, service: DocumentServiceDep):
-    return await service.get_all_documents(user.id)
+def get_all_documents(user: CurrentUser, service: DocumentServiceDep):
+    return service.get_all_documents(user.id)
 
 
 # Declared before /{document_id}: FastAPI matches in order, so the dynamic

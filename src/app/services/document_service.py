@@ -69,7 +69,7 @@ class DocumentService:
         self.db.refresh(document)
         return document
 
-    async def get_all_documents(self, user_id: uuid.UUID) -> list[Document]:
+    def get_all_documents(self, user_id: uuid.UUID) -> list[Document]:
         return self.db.query(Document).filter(Document.user_id == user_id).all()
 
     def get_for_user(self, document_id: uuid.UUID, user_id: uuid.UUID) -> Document | None:
