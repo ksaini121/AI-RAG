@@ -24,6 +24,7 @@ make db-shell         # psql shell inside the container
 make migration m="create users table"   # alembic revision --autogenerate -m "..."
 make migrate                            # alembic upgrade head
 make downgrade                          # alembic downgrade -1
+make checkpointer-setup                 # create LangGraph checkpointer tables (one-shot, not Alembic)
 ```
 
 Run a single test with `uv run pytest tests/test_smoke.py::test_health`.
@@ -40,7 +41,9 @@ Request flow: **routes → service → db model**, with schemas for request/resp
 
 - `app/main.py` — FastAPI app instance, includes routers, has raw `/health` and `/health/db` checks.
 - `app/api/routes/` — APIRouter modules. Route handlers depend on a per-request service instance built via a local `get_user_service` factory (see `user_routes.py`), which itself depends on `DbSession` (see below). Keep this pattern for new resource routers: a small `get_<x>_service` factory + `Annotated` dependency alias.
-- `app/services/` — business logic, one class per resource, takes a `Session` in `__init__`. No `db.close()` here — that's owned by the request-scoped dependency.
+- `app/api/routes/chat_routes.py` — `POST /chat` streams SSE events (`thread`, `token`, `tool_start`, `tool_end`, `done`, `error`) from the LangGraph agent; thread CRUD under `/chat/threads`. Ownership is always checked via `ChatService.get_for_user` (the checkpointer has no user concept) before touching the graph.
+- `app/agent/` — hand-built LangGraph agent (`graph.py`), tools, and the Postgres checkpointer pool (`checkpointer.py`); `connect_graph`/`disconnect_graph` run in the app lifespan.
+- `app/services/` — business logic, one class per resource (`chat_service.py` owns `chat_threads` rows), takes a `Session` in `__init__`. No `db.close()` here — that's owned by the request-scoped dependency.
 - `app/db/deps.py` — `get_db()` yields a `Session` from `SessionLocal` and closes it after the request; exposed as the `DbSession` annotated type for use in FastAPI `Depends`.
 - `app/db/session.py` — engine/`SessionLocal` construction from `config.database_url`.
 - `app/db/base.py` — declarative `Base` with a shared naming convention for constraints/indexes (important: Alembic autogenerate relies on this for consistent constraint names), plus a `TimestampMixin` (`created_at`/`updated_at` server defaults).

@@ -13,3 +13,6 @@ wheels/
 .env
 
 var/
+# Web
+web/node_modules/
+web/dist/

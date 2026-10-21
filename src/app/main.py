@@ -3,10 +3,11 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.agent.graph import connect_graph
-from app.api.routes import document_routes, user_routes
+from app.agent.graph import connect_graph, disconnect_graph
+from app.api.routes import chat_routes, document_routes, user_routes
 from app.core.config import config
 from app.db.session import engine
 from app.temporal.client import connect as connect_temporal
@@ -27,9 +28,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         )
     await connect_graph()
     yield
+    await disconnect_graph()
 
 
 app = FastAPI(title=config.app_name, version=config.app_version, lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=config.cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
@@ -48,3 +58,4 @@ def health_db():
 # Routers
 app.include_router(user_routes.router, prefix="/api/v1")
 app.include_router(document_routes.router, prefix="/api/v1")
+app.include_router(chat_routes.router, prefix="/api/v1")

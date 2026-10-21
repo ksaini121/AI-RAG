@@ -26,3 +26,7 @@ def build_pool() -> AsyncConnectionPool[AsyncConnection[DictRow]]:
         kwargs={"autocommit": True, "row_factory": dict_row, "prepare_threshold": 0},
     )
     return _pool
+
+
+def get_pool() -> AsyncConnectionPool[AsyncConnection[DictRow]] | None:
+    return _pool

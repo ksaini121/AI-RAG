@@ -34,6 +34,10 @@ class Config(BaseSettings):
     temporal_namespace: str = "default"
     temporal_task_queue: str = "ingestion"
 
+    # CORS: origins allowed to call the API from a browser (Vite dev server by default).
+    # Env value is a JSON list, e.g. CORS_ORIGINS=["http://localhost:5173"]
+    cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+
     # Agent
     agent_max_tool_iterations: int = 8
     http_fetch_timeout_seconds: int = 10
