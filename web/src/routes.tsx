@@ -3,6 +3,7 @@ import { LoginPage } from './auth/LoginPage'
 import { RegisterPage } from './auth/RegisterPage'
 import { RequireAuth } from './auth/RequireAuth'
 import { Layout } from './components/Layout'
+import { DocumentsPage } from './features/documents/DocumentsPage'
 
 const Placeholder = ({ name }: { name: string }) => (
   <p className="p-8 text-slate-500">{name} (coming next)</p>
@@ -17,7 +18,7 @@ export function AppRoutes() {
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/chat" replace />} />
           <Route path="/chat/:threadId?" element={<Placeholder name="Chat" />} />
-          <Route path="/documents" element={<Placeholder name="Documents" />} />
+          <Route path="/documents" element={<DocumentsPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
