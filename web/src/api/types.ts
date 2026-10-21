@@ -15,3 +15,17 @@ export interface TokenPair {
 export interface LoginResponse extends TokenPair {
   user: User
 }
+
+export type DocumentStatus = 'pending' | 'parsing' | 'chunking' | 'embedding' | 'ready' | 'failed'
+
+export interface Document {
+  id: string
+  filename: string
+  content_type: string
+  size_bytes: number
+  status: DocumentStatus
+  error: string | null
+  chunk_count: number
+  created_at: string
+  updated_at: string
+}
