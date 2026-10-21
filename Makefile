@@ -12,7 +12,8 @@ PORT       ?= 8000
 .PHONY: help install dev run lint format typecheck test check \
         pre-commit-install pre-commit \
         db-up db-down db-reset db-shell migration migrate downgrade \
-        worker temporal-up
+        worker temporal-up checkpointer-setup \
+        web-install web-dev web-build web-lint web-typecheck web-test web-types web-check
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -45,7 +46,30 @@ typecheck: ## Type-check with mypy
 test: ## Run the test suite
 	uv run pytest
 
-check: lint typecheck test ## Run lint, typecheck, and tests
+check: lint typecheck test web-check ## Run lint, typecheck, and tests (API and web)
+
+web-install: ## Install web dependencies
+	cd web && npm install
+
+web-dev: ## Run the web dev server (proxies /api to :8000)
+	cd web && npm run dev
+
+web-build: ## Production build of the web app
+	cd web && npm run build
+
+web-lint: ## Lint the web app
+	cd web && npm run lint
+
+web-typecheck: ## Type-check the web app
+	cd web && npm run typecheck
+
+web-test: ## Run web unit tests
+	cd web && npm test
+
+web-types: ## Regenerate API types from the running server
+	cd web && npm run generate:types
+
+web-check: web-lint web-typecheck web-test ## Lint, typecheck and test the web app
 
 db-up: ## Start the local Postgres container
 	docker compose up -d
@@ -73,3 +97,6 @@ worker: ## Run the Temporal ingestion worker
 
 temporal-up: ## Start Temporal server + UI (http://localhost:8080)
 	docker compose up -d temporal-db temporal temporal-ui
+
+checkpointer-setup: ## Create the LangGraph checkpointer tables (one-shot)
+	PYTHONPATH=$(APP_DIR) uv run python -m app.agent.setup
